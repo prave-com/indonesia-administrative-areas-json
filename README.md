@@ -10,6 +10,11 @@ The `indonesia-administrative-areas-json` repository contains the following:
 - `index.js`: JavaScript file used to convert the CSV data into JSON format.
 - `data.json`: JSON file containing the converted administrative areas data.
 
+`data.json` contain area by using it's code for key and it's name for value.
+For each of the area, it may contain inner area, such as district. For example,
+if you want to get district `Singkil Utara` in cities `KAB. ACEH SINGKIL` and
+province `Aceh`, the code is `11.10.10`.
+
 ## Getting Started
 
 To get started with this repository, follow these steps:
