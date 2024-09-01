@@ -1,6 +1,6 @@
 # Indonesia Administrative Areas JSON
 
-This repository provides a JSON representation of administrative areas in Indonesia, converted from a CSV file. The source CSV file is obtained from the [kodewilayah/permendagri-72-2019](https://github.com/kodewilayah/permendagri-72-2019) repository. 
+This repository provides a JSON representation of administrative areas in Indonesia, converted from a CSV file. The source CSV file is obtained from the [kodewilayah/permendagri-72-2019](https://github.com/kodewilayah/permendagri-72-2019) repository.
 
 ## Overview
 
