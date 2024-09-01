@@ -29,22 +29,34 @@ fs.createReadStream('data.csv')
         }
       } else if (parts.length === 2) {
         // City
-        provinces[parts[0]].cities[parts[1]] = {
-          name: name,
-          districts: {},
+        try {
+          provinces[parts[0]].cities[parts[1]] = {
+            name: name,
+            districts: {},
+          }
+        } catch (e) {
+          console.log(e)
         }
       } else if (parts.length === 3) {
         // District
-        provinces[parts[0]].cities[parts[1]].districts[parts[2]] = {
-          name: name,
-          neighborhoods: {},
+        try {
+          provinces[parts[0]].cities[parts[1]].districts[parts[2]] = {
+            name: name,
+            neighborhoods: {},
+          }
+        } catch (e) {
+          console.log(e)
         }
       } else if (parts.length === 4) {
         // Neighborhood
-        provinces[parts[0]].cities[parts[1]].districts[parts[2]].neighborhoods[
-          parts[3]
-        ] = {
-          name: name,
+        try {
+          provinces[parts[0]].cities[parts[1]].districts[
+            parts[2]
+          ].neighborhoods[parts[3]] = {
+            name: name,
+          }
+        } catch (e) {
+          console.log(e)
         }
       }
     })
