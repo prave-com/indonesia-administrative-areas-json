@@ -1,17 +1,16 @@
 const fs = require('fs')
 const csv = require('csv-parser')
 
-// Membaca file CSV
+// Read CSV file
 const results = []
 fs.createReadStream('data.csv')
   .pipe(csv())
   .on('data', (data) => results.push(data))
   .on('end', () => {
     const jsonResult = {
-      INDONESIA: {
-        Code: '62',
-        Name: 'Indonesia',
-        Provinces: {},
+      62: {
+        name: 'Indonesia',
+        provinces: {},
       },
     }
 
@@ -21,69 +20,50 @@ fs.createReadStream('data.csv')
       const code = record.kode
       const name = record.nama
 
-      console.log(record)
-
       const parts = code.split('.')
       if (parts.length === 1) {
-        // Provinsi
-        provinces[name] = {
-          Code: code,
-          Name: name,
-          Cities: {},
+        // Province
+        provinces[parts[0]] = {
+          name: name,
+          cities: {},
         }
       } else if (parts.length === 2) {
-        // Kota
-        const provinceName = findNameByCode(
-          parts.slice(0, 1).join('.'),
-          provinces,
-        )
-        if (provinceName) {
-          provinces[provinceName].Cities[name] = {
-            Code: code,
-            Name: name,
-            Districts: {},
+        // City
+        try {
+          provinces[parts[0]].cities[parts[1]] = {
+            name: name,
+            districts: {},
           }
+        } catch (e) {
+          console.log(e)
         }
       } else if (parts.length === 3) {
-        // Kecamatan
-        const cityName = findCityNameByCode(
-          parts.slice(0, 2).join('.'),
-          provinces,
-        )
-        if (cityName) {
-          const city =
-            provinces[findNameByCode(parts.slice(0, 1).join('.'), provinces)]
-              .Cities[cityName]
-          city.Districts[name] = {
-            Code: code,
-            Name: name,
-            Neighborhoods: {},
+        // District
+        try {
+          provinces[parts[0]].cities[parts[1]].districts[parts[2]] = {
+            name: name,
+            neighborhoods: {},
           }
+        } catch (e) {
+          console.log(e)
         }
       } else if (parts.length === 4) {
-        // Kelurahan
-        const districtName = findDistrictNameByCode(
-          parts.slice(0, 3).join('.'),
-          provinces,
-        )
-        if (districtName) {
-          const district =
-            provinces[findNameByCode(parts.slice(0, 1).join('.'), provinces)]
-              .Cities[
-              findCityNameByCode(parts.slice(0, 2).join('.'), provinces)
-            ].Districts[districtName]
-
-          district.Neighborhoods[name] = {
-            Code: code,
-            Name: name,
+        // Neighborhood
+        try {
+          provinces[parts[0]].cities[parts[1]].districts[
+            parts[2]
+          ].neighborhoods[parts[3]] = {
+            name: name,
           }
+        } catch (e) {
+          console.log(e)
         }
       }
     })
 
-    jsonResult.INDONESIA.Provinces = provinces
+    jsonResult['62'].provinces = provinces
 
-    // Menulis hasil ke file JSON
+    // Write result to JSON file
     fs.writeFile('data.json', JSON.stringify(jsonResult, null, 2), (err) => {
       if (err) {
         console.error('Error writing JSON file:', err)
@@ -92,36 +72,3 @@ fs.createReadStream('data.csv')
       }
     })
   })
-
-function findNameByCode(code, provinces) {
-  for (const [name, province] of Object.entries(provinces)) {
-    if (province.Code === code) {
-      return name
-    }
-  }
-  return null
-}
-
-function findCityNameByCode(code, provinces) {
-  for (const province of Object.values(provinces)) {
-    for (const [cityName, city] of Object.entries(province.Cities)) {
-      if (city.Code === code) {
-        return cityName
-      }
-    }
-  }
-  return null
-}
-
-function findDistrictNameByCode(code, provinces) {
-  for (const province of Object.values(provinces)) {
-    for (const city of Object.values(province.Cities)) {
-      for (const [districtName, district] of Object.entries(city.Districts)) {
-        if (district.Code === code) {
-          return districtName
-        }
-      }
-    }
-  }
-  return null
-}
