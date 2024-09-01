@@ -1,7 +1,7 @@
 const fs = require('fs')
 const csv = require('csv-parser')
 
-// Membaca file CSV
+// Read CSV file
 const results = []
 fs.createReadStream('data.csv')
   .pipe(csv())
@@ -25,56 +25,48 @@ fs.createReadStream('data.csv')
 
       const parts = code.split('.')
       if (parts.length === 1) {
-        // Provinsi
+        // Province
         provinces[name] = {
-          Code: code,
+          Code: parts[0],
           Name: name,
           Cities: {},
         }
       } else if (parts.length === 2) {
-        // Kota
-        const provinceName = findNameByCode(
-          parts.slice(0, 1).join('.'),
-          provinces,
-        )
+        // City
+        const provinceName = findNameByCode(parts[0], provinces)
         if (provinceName) {
           provinces[provinceName].Cities[name] = {
-            Code: code,
+            Code: parts[1],
             Name: name,
             Districts: {},
           }
         }
       } else if (parts.length === 3) {
-        // Kecamatan
-        const cityName = findCityNameByCode(
-          parts.slice(0, 2).join('.'),
-          provinces,
-        )
+        // District
+        const cityName = findCityNameByCode(parts.slice(0, 2), provinces)
         if (cityName) {
           const city =
-            provinces[findNameByCode(parts.slice(0, 1).join('.'), provinces)]
-              .Cities[cityName]
+            provinces[findNameByCode(parts[0], provinces)].Cities[cityName]
           city.Districts[name] = {
-            Code: code,
+            Code: parts[2],
             Name: name,
             Neighborhoods: {},
           }
         }
       } else if (parts.length === 4) {
-        // Kelurahan
+        // Neighborhood
         const districtName = findDistrictNameByCode(
-          parts.slice(0, 3).join('.'),
+          parts.slice(0, 3),
           provinces,
         )
         if (districtName) {
           const district =
-            provinces[findNameByCode(parts.slice(0, 1).join('.'), provinces)]
-              .Cities[
-              findCityNameByCode(parts.slice(0, 2).join('.'), provinces)
+            provinces[findNameByCode(parts[0], provinces)].Cities[
+              findCityNameByCode(parts.slice(0, 2), provinces)
             ].Districts[districtName]
 
           district.Neighborhoods[name] = {
-            Code: code,
+            Code: parts[3],
             Name: name,
           }
         }
@@ -83,7 +75,7 @@ fs.createReadStream('data.csv')
 
     jsonResult.INDONESIA.Provinces = provinces
 
-    // Menulis hasil ke file JSON
+    // Write result to JSON file
     fs.writeFile('data.json', JSON.stringify(jsonResult, null, 2), (err) => {
       if (err) {
         console.error('Error writing JSON file:', err)
@@ -103,9 +95,11 @@ function findNameByCode(code, provinces) {
 }
 
 function findCityNameByCode(code, provinces) {
+  const [provinceCode, cityCode] = code
+
   for (const province of Object.values(provinces)) {
     for (const [cityName, city] of Object.entries(province.Cities)) {
-      if (city.Code === code) {
+      if (province.Code == provinceCode && city.Code === cityCode) {
         return cityName
       }
     }
@@ -114,10 +108,16 @@ function findCityNameByCode(code, provinces) {
 }
 
 function findDistrictNameByCode(code, provinces) {
+  const [provinceCode, cityCode, districtCode] = code
+
   for (const province of Object.values(provinces)) {
     for (const city of Object.values(province.Cities)) {
       for (const [districtName, district] of Object.entries(city.Districts)) {
-        if (district.Code === code) {
+        if (
+          province.Code == provinceCode &&
+          city.Code === cityCode &&
+          district.Code === districtCode
+        ) {
           return districtName
         }
       }
